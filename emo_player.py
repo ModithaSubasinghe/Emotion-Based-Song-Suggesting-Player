@@ -4,6 +4,8 @@ from tkinter import *
 import pygame
 from tkinter import messagebox
 
+from MediaStore import song_adder,music_db
+
 
 # show aboutus
 def about_us():
@@ -24,7 +26,7 @@ class MusicPlayer(tk.Tk):
 
         menubar = tk.Menu(container)
         filemenu = tk.Menu(menubar, tearoff=0)
-        filemenu.add_command(label="Add Song", command=lambda: songAdder.addSongs(musicdb))
+        filemenu.add_command(label="Add Song", command=lambda: song_adder.addSongs(music_db))
         filemenu.add_separator()
         filemenu.add_command(label="Exit", command=quite)
         menubar.add_cascade(label="File", menu=filemenu)
