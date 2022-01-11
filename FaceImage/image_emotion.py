@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 def checkEmotion():
-    test_image_one = plt.imread("bb.JPG")
+    test_image_one = plt.imread("../Images/image.jpg")
     emo_detector = FER(mtcnn=True)
 
     captured_emotions = emo_detector.detect_emotions(test_image_one)
