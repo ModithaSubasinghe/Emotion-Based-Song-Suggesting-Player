@@ -1,14 +1,11 @@
-import tkinter as tk
-from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 from pydub import AudioSegment
 import os
-from os import path
 from Model import emotion_predictor
 
 # Add songs to the palyer
-def addSongs(musicdb):
+def addSongs(music_db):
     songs = []
     file_path = filedialog.askopenfilenames(title="Select Songs", filetypes=(("Mp3 Files", "*.mp3"),))
     for i in file_path:
@@ -25,8 +22,8 @@ def addSongs(musicdb):
         print("name=" + name)
         name1 = os.path.dirname(x)
         print(name1)
-        myresult = musicdb.getSong(name)
-        if len(myresult) > 0:
+        my_result = music_db.getSong(name)
+        if len(my_result) > 0:
             print("Song Already Added Before!!!")
             # popupmsg("Song Already Added Before!!!")
             messagebox.showinfo('!', 'Song Already Added Before!!!')
@@ -44,6 +41,6 @@ def addSongs(musicdb):
             dst = name1 + "/" + name + ".wav"
             print(dst)
             sound.export(dst, format="wav")
-            musicdb.insertsong(dst, name, emotion)
+            music_db.insertsong(dst, name, emotion)
             # popupmsg("Song successfully added")
             messagebox.showinfo('!', 'Song successfully added \n Detected Emotion= ' + emotion)

@@ -7,12 +7,13 @@ import os
 import threading
 import time
 import os
+import cv2
 from os import path
 import matplotlib.pyplot as plt
 # from PIL import Image
 import pathlib
 
-from MediaStore import song_adder
+from MediaStore import song_adder, music_db
 from MediaStore.music_db import MusicDb
 from FaceImage import image_emotion
 from MediaStore.player_controller import playerController
@@ -43,7 +44,7 @@ class MusicPlayer(tk.Tk):
 
         menubar = tk.Menu(container)
         filemenu = tk.Menu(menubar, tearoff=0)
-        filemenu.add_command(label="Add Song", command=lambda: song_adder.addSongs(musicdb))
+        filemenu.add_command(label="Add Song", command=lambda: song_adder.addSongs(music_db))
         filemenu.add_separator()
         filemenu.add_command(label="Exit", command=quite)
         menubar.add_cascade(label="File", menu=filemenu)
@@ -52,14 +53,14 @@ class MusicPlayer(tk.Tk):
         self.frames = {}
         global PlayerWindow
         for f in (StartPage, ViewerWindow, PlayerWindow):
-            frame = f(container, self, musicdb)
+            frame = f(container, self, music_db)
 
             self.frames[f] = frame
 
             frame.grid(row=0, column=0, sticky="nsew")
 
         viewmenu = tk.Menu(menubar, tearoff=1)
-        startPage = StartPage(container, self, musicdb)
+        startPage = StartPage(container, self, music_db)
         viewmenu.add_command(label="View Songs", command=self.redirect)
         viewmenu.add_separator()
         viewmenu.add_command(label="About Us", command=about_us)
@@ -78,11 +79,11 @@ class MusicPlayer(tk.Tk):
 
 # this is the start Page
 class StartPage(tk.Frame):
-    def __init__(self, parent, controller, musicdb):
+    def __init__(self, parent, controller, music_db):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        self.musicdb = musicdb
-        logo = tk.PhotoImage(file="images/background3.gif")
+        self.music_db = music_db
+        logo = tk.PhotoImage(file="Images/background3.gif")
         BGlabel = tk.Label(self, image=logo)
         BGlabel.image = logo
         BGlabel.place(x=0, y=0)
@@ -97,64 +98,63 @@ class StartPage(tk.Frame):
         label2 = tk.Label(self, text="\n\nClick on TAKE PHOTO")
 
     # Resize the image
-    def resize_image(event):
-        new_width = event.width
-        new_height = event.height
-        image = copy_of_image.resize((new_width, new_height))
-        photo = ImageTk.PhotoImage(image)
-        label.config(image=photo)
-        label.image = photo  # avoid garbage collection
+    # def resize_image(event):
+    #     new_width = event.width
+    #     new_height = event.height
+    #     image = copy_of_image.resize((new_width, new_height))
+    #     photo = ImageTk.PhotoImage(image)
+    #     label.config(image=photo)
+    #     label.image = photo  # avoid garbage collection
 
     # Get real time face image
     def getImage(self):
-        import numpy as np
-        import cv2
-
-        cap = cv2.VideoCapture(0)
+        cam = cv2.VideoCapture(0)
         count = 0
-
         while (count != 1):
-            # Capture frame-by-frame
-            ret, frame = cap.read()
+            ret, img = cam.read()
+            cv2.imshow("Press Space Button To Take A Photo", img)
+            if not ret:
+                break
+            k = cv2.waitKey(1)
 
-            # Our operations on the frame come here
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            if k % 256 == 27:
+                print("close")
+                break
 
-            # Display the resulting frame
-            cv2.imwrite('images/frame.png', frame)
-            count += 1
-            '''
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-            '''
-            # When everything done, release the capture
-            cap.release()
-            cv2.destroyAllWindows()
-            self.showImage()
-            global emotion
-            # emotion= "happiness"
-            # Get emotion type from image through API
-            emotion = faceEmotion.checkEmotion()
-            f = open("faceimage/emotion.txt", "w")
-            f.write(emotion)
-            # If face is not detected print that
-            if emotion == " ":
-                lbl3 = Label(self, padx=5, width=100, bg="dim gray", fg='white', relief=GROOVE,
-                             text="\n\nNO face Detected. Try Again!!", font=('helvetica 15 bold'))
-                lbl3.place(x=20, y=500, relx=0.5, anchor=CENTER)
+            if k % 256 == 32:
+                print("Image saved")
+                cv2.imwrite('Images/image.jpg', img)
+                count += 1
+        cam.release()
+        cv2.destroyAllWindows()
+        self.showImage()
+        global emotion
+        # Get emotion type from image through API
+        emotion = str(image_emotion.checkEmotion())
+        # f = open("FaceImage/emotion.txt")
+        # # # f.write(emotion)
+        # f.write(emotion)
+        if emotion == "neutral":
+            emotion ="calm"
+            print(emotion)
+        # If face is not detected print that
+        if emotion == "None":
+            lbl3 = Label(self, padx=5, width=100, bg="dim gray", fg='white', relief=GROOVE,
+                         text="\n\nNO face Detected. Try Again!!", font=('helvetica 15 bold'))
+            lbl3.place(x=20, y=500, relx=0.5, anchor=CENTER)
             # IF Face is detected show emotion type
-            else:
-                lbl3 = Label(self, padx=5, width=100, bg="dim gray", fg='red', relief=GROOVE,
-                             text="\n\nYour current emotion :  " + emotion, font=('helvetica 15 bold'))
-                lbl3.place(x=20, y=500, relx=0.5, anchor=CENTER)
+        else:
+            lbl3 = Label(self, padx=5, width=100, bg="dim gray", fg='red', relief=GROOVE,
+                         text="\n\nYour current emotion :  " + emotion, font=('helvetica 15 bold'))
+            lbl3.place(x=20, y=500, relx=0.5, anchor=CENTER)
 
-                but3 = Button(self, padx=5, pady=5, width=39, fg='black', relief=GROOVE, text='Generate Playlist ',
-                              command=lambda: self.controller.show_frame(PlayerWindow), font=('helvetica 15 bold'))
-                but3.place(x=120, y=550)
+            but3 = Button(self, padx=5, pady=5, width=39, fg='black', relief=GROOVE, text='Generate Playlist ',
+                          command=lambda: self.controller.show_frame(PlayerWindow), font=('helvetica 15 bold'))
+            but3.place(x=120, y=550)
 
     # show the obtained image from webcam
     def showImage(self):
-        load = Image.open("images/frame.png")
+        load = Image.open("Images/image.jpg")
         load = load.resize((250, 250), Image.ANTIALIAS)
         render = ImageTk.PhotoImage(load)
         img = Label(self, image=render)
@@ -172,11 +172,11 @@ paused = FALSE
 
 # This is the window that display songs which already added to the player
 class ViewerWindow(tk.Frame):
-    def __init__(self, parent, controller, musicdb):
+    def __init__(self, parent, controller, music_db):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        self.musicdb = musicdb
-        logo = tk.PhotoImage(file="images/background3.gif")
+        self.music_db = music_db
+        logo = tk.PhotoImage(file="Images/background3.gif")
         BGlabel = tk.Label(self, image=logo)
         BGlabel.image = logo
         BGlabel.place(x=0, y=0)
@@ -205,16 +205,16 @@ class ViewerWindow(tk.Frame):
 
         # select required type by the user
         if emotiontype == "all":
-            myresult = self.musicdb.getallsongs()
+            myresult = self.music_db.getallsongs()
         if emotiontype == "happy":
-            myresult = self.musicdb.getsongsforHappy()
+            myresult = self.music_db.getsongsforHappy()
         if emotiontype == "sad":
-            myresult = self.musicdb.getsongsforSad()
+            myresult = self.music_db.getsongsforSad()
         if emotiontype == "calm":
-            myresult = self.musicdb.getsongsforCalm()
+            myresult = self.music_db.getsongsforCalm()
         print(myresult)
         for x in myresult:
-            playercontroller.createQueue(x[0])
+            player_controller.createQueue(x[0])
             filename = os.path.basename(x[0])
             index = 0
             playlistbox.insert(index, filename)
@@ -261,7 +261,7 @@ class ViewerWindow(tk.Frame):
 
         scale = Scale(self, from_=0, to=100, orient=HORIZONTAL, command=self.set_vol)
         scale.set(70)  # implement the default value of scale when music player starts
-        playercontroller.set_vol(0.7)
+        player_controller.set_vol(0.7)
         scale.place(x=550, y=400)
 
         but5 = Button(self, padx=5, pady=5, width=20, fg='black', relief=GROOVE,
@@ -278,7 +278,7 @@ class ViewerWindow(tk.Frame):
             selected_song = int(selected_song[0])
             print("selected")
             play_it = playlist[selected_song]
-            play = playercontroller.play_music(play_it)
+            play = player_controller.play_music(play_it)
             print(play)
             if play == "resumed":
                 global paused
@@ -286,7 +286,7 @@ class ViewerWindow(tk.Frame):
                 statusbar['text'] = "                   Music Resumed"
             else:
                 statusbar['text'] = "               Playing music" + ' - ' + os.path.basename(play_it)
-                total_length = playercontroller.show_details(play_it)
+                total_length = player_controller.show_details(play_it)
                 mins, secs = divmod(total_length, 60)
                 mins = round(mins)
                 secs = round(secs)
@@ -298,13 +298,13 @@ class ViewerWindow(tk.Frame):
             messagebox.showerror('File not found', 'Melody could not find the file. Please check again.')
 
     def stop_music(self):
-        stop = playercontroller.stop_music()
+        stop = player_controller.stop_music()
         statusbar['text'] = stop
 
     def pause_music(self):
         global paused
         paused = True
-        pause = playercontroller.pause_music()
+        pause = player_controller.pause_music()
         statusbar['text'] = pause
 
     def rewind_music(self):
@@ -312,10 +312,10 @@ class ViewerWindow(tk.Frame):
         statusbar['text'] = rewind
 
     def set_vol(self, val):
-        playercontroller.set_vol(val)
+        player_controller.set_vol(val)
 
     def mute_music(self):
-        mute = playercontroller.mute_music()
+        mute = player_controller.mute_music()
         if mute == "unmuted":  # Unmute the music
             volumeBtn.configure(image=volumePhoto)
             scale.set(70)
@@ -327,7 +327,7 @@ class ViewerWindow(tk.Frame):
         # mixer.music.get_busy(): - Returns FALSE when we press the stop button (music stop playing)
         # Continue - Ignores all of the statements below it. We check if music is paused or not.
         current_time = 0
-        while current_time <= t and playercontroller.checkBusy():
+        while current_time <= t and player_controller.checkBusy():
             if paused:
                 continue
             else:
@@ -342,10 +342,10 @@ class ViewerWindow(tk.Frame):
 
 # This is the window that shows after taken the face image
 class PlayerWindow(tk.Frame):
-    def __init__(self, parent, controller, musicdb):
+    def __init__(self, parent, controller, music_db):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        self.musicdb = musicdb
+        self.music_db = music_db
         logo = tk.PhotoImage(file="images/background3.gif")
         BGlabel = tk.Label(self, image=logo)
         BGlabel.image = logo
@@ -369,7 +369,7 @@ class PlayerWindow(tk.Frame):
         if count == 0:
             self.showPlaylist()
         else:
-            playercontroller.stop_music()
+            player_controller.stop_music()
             currenttimelabel['text'] = "00:00"
             self.showPlaylist()
         count += 1
@@ -404,13 +404,13 @@ class PlayerWindow(tk.Frame):
         f = open("faceimage/emotion.txt", "r")
         emotion = f.read()
         if emotion == "happiness":
-            myresult1 = musicdb.getsongsforHappy()
+            myresult1 = music_db.getsongsforHappy()
         elif emotion == "sadness":
-            myresult1 = musicdb.getsongsforSad()
+            myresult1 = music_db.getsongsforSad()
         else:
-            myresult1 = musicdb.getsongsforCalm()
+            myresult1 = music_db.getsongsforCalm()
         for x in myresult1:
-            playercontroller.createQueue(x[0])
+            player_controller.createQueue(x[0])
             filename = os.path.basename(x[0])
             index = 0
             playlistbox.insert(index, filename)
@@ -454,7 +454,7 @@ class PlayerWindow(tk.Frame):
         global scale
         scale = Scale(self, from_=0, to=100, orient=HORIZONTAL, command=self.set_vol)
         scale.set(70)  # implement the default value of scale when music player starts
-        playercontroller.set_vol(0.7)
+        player_controller.set_vol(0.7)
         scale.place(x=550, y=450)
 
     global paused
@@ -466,7 +466,7 @@ class PlayerWindow(tk.Frame):
             selected_song = int(selected_song[0])
             print("selected")
             play_it = playlist[selected_song]
-            play = playercontroller.play_music(play_it)
+            play = player_controller.play_music(play_it)
             print(play)
             if play == "resumed":
                 global paused
@@ -474,7 +474,7 @@ class PlayerWindow(tk.Frame):
                 statusbar['text'] = "                   Music Resumed"
             else:
                 statusbar['text'] = "      Playing music" + ' - ' + os.path.basename(play_it)
-                total_length = playercontroller.show_details(play_it)
+                total_length = player_controller.show_details(play_it)
                 mins, secs = divmod(total_length, 60)
                 mins = round(mins)
                 secs = round(secs)
@@ -486,13 +486,13 @@ class PlayerWindow(tk.Frame):
             messagebox.showerror('File not found', 'Melody could not find the file. Please check again.')
 
     def stop_music(self):
-        stop = playercontroller.stop_music()
+        stop = player_controller.stop_music()
         statusbar['text'] = stop
 
     def pause_music(self):
         global paused
         paused = True
-        pause = playercontroller.pause_music()
+        pause = player_controller.pause_music()
         statusbar['text'] = pause
 
     def rewind_music(self):
@@ -500,10 +500,10 @@ class PlayerWindow(tk.Frame):
         statusbar['text'] = rewind
 
     def set_vol(self, val):
-        playercontroller.set_vol(val)
+        player_controller.set_vol(val)
 
     def mute_music(self):
-        mute = playercontroller.mute_music()
+        mute = player_controller.mute_music()
         if mute == "unmuted":  # Unmute the music
             volumeBtn.configure(image=volumePhoto)
             scale.set(70)
@@ -515,7 +515,7 @@ class PlayerWindow(tk.Frame):
         # mixer.music.get_busy(): - Returns FALSE when we press the stop button (music stop playing)
         # Continue - Ignores all of the statements below it. We check if music is paused or not.
         current_time = 0
-        while current_time <= t and playercontroller.checkBusy():
+        while current_time <= t and player_controller.checkBusy():
             if paused:
                 continue
             else:
@@ -528,10 +528,10 @@ class PlayerWindow(tk.Frame):
                 current_time += 1
 
 
-musicdb = MusicDb()
-musicdb.init()
+music_db = MusicDb()
+music_db.init()
 app = MusicPlayer()
-playercontroller = playerController()
+player_controller = playerController()
 app.geometry("720x600")
 app.resizable(0, 0)
 app.mainloop()

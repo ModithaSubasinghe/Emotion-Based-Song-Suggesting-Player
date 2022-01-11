@@ -4,13 +4,13 @@ import mysql.connector
 class MusicDb:
 
     def init(self):
-        # creating database connection
         self.mydb = mysql.connector.connect(
             host="localhost",
             user="root",
-            passwd="",
-            database="player"
+            passwd="Moditha@1996",
+            database="database_01"
         )
+
 
         self.mycursor = self.mydb.cursor()
         self.createsongstable()

@@ -6,7 +6,7 @@ def getImage():
     count = 0
     while (count != 1):
         ret, img = cam.read()
-        cv2.imshow("Test", img)
+        cv2.imshow("Press Space Button To Take A Photo", img)
         if not ret:
             break
         k = cv2.waitKey(1)
