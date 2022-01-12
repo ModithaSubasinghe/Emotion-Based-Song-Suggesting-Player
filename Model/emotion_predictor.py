@@ -3,17 +3,18 @@ import librosa
 import pandas as pd
 import numpy as np
 import csv
-
+import tensorflow
 
 import warnings
 warnings.filterwarnings('ignore')
 from keras.models import load_model
 import joblib
+import Model
 
 
 def detectEmotion(path):
     songname = f'{path}'
-    print(songname)
+    print("++++"+songname)
     base = os.path.basename(path)
     print(base)
     name = os.path.splitext(base)[0]
@@ -39,7 +40,6 @@ def detectEmotion(path):
     zcr = librosa.feature.zero_crossing_rate(y)
     mfcc = librosa.feature.mfcc(y=y, sr=sr)
     to_append = f'{np.mean(chroma_stft)} {np.mean(spec_cent)} {np.mean(spec_bw)} {np.mean(rolloff)} {np.mean(zcr)}'
-    print(to_append)
     for e in mfcc:
         to_append += f' {np.mean(e)}'
     file = open('song_data.csv', 'a', newline='')
@@ -47,19 +47,14 @@ def detectEmotion(path):
         writer = csv.writer(file)
         writer.writerow(to_append.split())
 
-    model = load_model('my_model.h5')
+    model = load_model('Model/my_model1.h5')
     data_from_csv = pd.read_csv("song_data.csv")
     data = data_from_csv
-    print(data)
     data.shape
-    scaler = joblib.load("scaler.save")
+    scaler = joblib.load("Model/scaler1.save")
     X = scaler.transform(np.array(data.iloc[:, :], dtype=float))
-    print(X)
     ynew = model.predict(np.array(X))
 
-    # ynew = model.predict(np.array(data))
-
-    print(ynew)
     if np.argmax(ynew) == 0:
         print("Calm")
         return "calm"
@@ -71,4 +66,4 @@ def detectEmotion(path):
         return "sad"
 
 
-# detectEmotion("E:/mp3/Lewis Capaldi - Someone You Loved (Mp3 + Lyrics).mp3")
+# detectEmotion("E:/Ava Max - So Am I (Lyrics).mp3")

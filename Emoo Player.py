@@ -34,7 +34,7 @@ def quite():
 class MusicPlayer(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        tk.Tk.wm_title(self, "Emotion Based Song Suggester")
+        tk.Tk.wm_title(self, "Emotion Based Song Suggesting System")
         container = tk.Frame(self)
 
         container.pack(side="top", fill="both", expand=True)
@@ -83,28 +83,22 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         self.music_db = music_db
-        logo = tk.PhotoImage(file="Images/background3.gif")
+        logo = tk.PhotoImage(file="Images/emoo.png")
         BGlabel = tk.Label(self, image=logo)
         BGlabel.image = logo
         BGlabel.place(x=0, y=0)
 
-        but1 = Button(self, padx=5, pady=5, width=39, bg='white', fg='black', relief=GROOVE, command=self.getImage,
+        but1 = Button(self, padx=5, pady=5, width=15, bg='#0C0C0C', fg='#1DD3D0', activebackground='#E2F1F1', relief=GROOVE, command=self.getImage,
                       text='Open Cam', font=('helvetica 15 bold'))
-        but1.place(x=120, y=100)
-        addButton = tk.Button(self, text=" TAKE PHOTO ", fg='red', font=24, command=self.getImage)
+        but1.place(x=550, y=200)
+        but2 = tk.Button(self, padx=5, pady=5, width=15, bg='#0C0C0C', fg='#1DD3D0', text=" Add Songs ", relief=GROOVE, command=lambda: song_adder.addSongs(music_db),
+                         font=('helvetica 15 bold'))
+        but2.place(x=250, y=200)
 
-        label1 = tk.Label(self, text="\n\nWelcome to the Emo player\nPlay songs which fix yoyr mood ", fg='green',
-                          font="Times 24")
-        label2 = tk.Label(self, text="\n\nClick on TAKE PHOTO")
+        # label1 = tk.Label(self, text="\n\nWelcome to the Emo player\nPlay songs which fix yoyr mood ", fg='green',
+        #                   font="Times 24")
+        # label2 = tk.Label(self, text="\n\nClick on TAKE PHOTO")
 
-    # Resize the image
-    # def resize_image(event):
-    #     new_width = event.width
-    #     new_height = event.height
-    #     image = copy_of_image.resize((new_width, new_height))
-    #     photo = ImageTk.PhotoImage(image)
-    #     label.config(image=photo)
-    #     label.image = photo  # avoid garbage collection
 
     # Get real time face image
     def getImage(self):
@@ -129,37 +123,73 @@ class StartPage(tk.Frame):
         cv2.destroyAllWindows()
         self.showImage()
         global emotion
-        # Get emotion type from image through API
         emotion = str(image_emotion.checkEmotion())
-        # f = open("FaceImage/emotion.txt")
-        # # # f.write(emotion)
-        # f.write(emotion)
-        if emotion == "neutral":
-            emotion ="calm"
-            print(emotion)
+        f = open("faceimage/emotion.txt", "w")
+        f.write(emotion)
+
         # If face is not detected print that
         if emotion == "None":
-            lbl3 = Label(self, padx=5, width=100, bg="dim gray", fg='white', relief=GROOVE,
-                         text="\n\nNO face Detected. Try Again!!", font=('helvetica 15 bold'))
-            lbl3.place(x=20, y=500, relx=0.5, anchor=CENTER)
-            # IF Face is detected show emotion type
-        else:
-            lbl3 = Label(self, padx=5, width=100, bg="dim gray", fg='red', relief=GROOVE,
-                         text="\n\nYour current emotion :  " + emotion, font=('helvetica 15 bold'))
-            lbl3.place(x=20, y=500, relx=0.5, anchor=CENTER)
+            lbl3 = Label(self, padx=5, width=15, bg="dim gray", fg='white', relief=GROOVE,
+                         text="NO face Detected\n Try Again!!", font=('helvetica 15 bold'))
+            lbl3.place(x=140, y=540, anchor=CENTER)
 
-            but3 = Button(self, padx=5, pady=5, width=39, fg='black', relief=GROOVE, text='Generate Playlist ',
+            but3 = Button(self, padx=5, pady=5, width=15, fg='black', relief=GROOVE, text='Click again on\n Open cam',
+                          command=lambda: self.controller.show_frame(StartPage), font=('helvetica 15 bold'))
+            but3.place(x=760, y=475)
+
+            # IF Face is detected show emotion type
+        elif emotion == "neutral":
+            emotion ="calm"
+            lbl3 = Label(self, padx=5, width=20, bg="dim gray", fg='red', relief=GROOVE,
+                         text="Your current emotion is \n" + emotion, font=('helvetica 15 bold'))
+            lbl3.place(x=140, y=540,  anchor=CENTER)
+
+            but3 = Button(self, padx=5, pady=5, width=15, fg='black', relief=GROOVE, text='Generate \nPlaylist ',
                           command=lambda: self.controller.show_frame(PlayerWindow), font=('helvetica 15 bold'))
-            but3.place(x=120, y=550)
+            but3.place(x=760, y=475)
+
+        elif emotion == "angry":
+            lbl3 = Label(self, padx=5, width=20, bg="dim gray", fg='white', relief=GROOVE,
+                         text="You have angry face.\n Try Again!!", font=('helvetica 15 bold'))
+            lbl3.place(x=140, y=540, anchor=CENTER)
+
+            but3 = Button(self, padx=5, pady=5, width=15, fg='black', relief=GROOVE, text='Click again on\n Open cam',
+                          command=lambda: self.controller.show_frame(StartPage), font=('helvetica 15 bold'))
+            but3.place(x=760, y=475)
+
+        elif emotion == "fear":
+            lbl3 = Label(self, padx=5, width=20, bg="dim gray", fg='white', relief=GROOVE,
+                         text="You have fear face.\n Try Again!!", font=('helvetica 15 bold'))
+            lbl3.place(x=140, y=540, anchor=CENTER)
+            but3 = Button(self, padx=5, pady=5, width=15, fg='black', relief=GROOVE, text='Click again on\n Open cam',
+                          command=lambda: self.controller.show_frame(StartPage), font=('helvetica 15 bold'))
+            but3.place(x=760, y=475)
+
+        elif emotion == "surprise":
+            lbl3 = Label(self, padx=5, width=20, bg="dim gray", fg='white', relief=GROOVE,
+                         text="You have surprise face.\n Try Again!!", font=('helvetica 15 bold'))
+            lbl3.place(x=140, y=540, anchor=CENTER)
+            but3 = Button(self, padx=5, pady=5, width=15, fg='black', relief=GROOVE, text='Click again on\n Open cam',
+                          command=lambda: self.controller.show_frame(StartPage), font=('helvetica 15 bold'))
+            but3.place(x=760, y=475)
+
+        else:
+            lbl3 = Label(self, padx=5, width=20, bg="dim gray", fg='red', relief=GROOVE,
+                         text="Your current emotion is \n" + emotion, font=('helvetica 15 bold'))
+            lbl3.place(x=140, y=540, anchor=CENTER)
+
+            but3 = Button(self, padx=5, pady=5, width=15, fg='black', relief=GROOVE, text='Generate \nPlaylist ',
+                          command=lambda: self.controller.show_frame(PlayerWindow), font=('helvetica 15 bold'))
+            but3.place(x=760, y=475)
 
     # show the obtained image from webcam
     def showImage(self):
         load = Image.open("Images/image.jpg")
-        load = load.resize((250, 250), Image.ANTIALIAS)
+        load = load.resize((200, 200), Image.ANTIALIAS)
         render = ImageTk.PhotoImage(load)
         img = Label(self, image=render)
         img.image = render
-        img.place(x=170, y=180)
+        img.place(x=50, y=300)
 
     def redirect(self):
         command = lambda: self.controller.show_frame(ViewerWindow)
@@ -176,7 +206,7 @@ class ViewerWindow(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         self.music_db = music_db
-        logo = tk.PhotoImage(file="Images/background3.gif")
+        logo = tk.PhotoImage(file="Images/Viewer Window.png")
         BGlabel = tk.Label(self, image=logo)
         BGlabel.image = logo
         BGlabel.place(x=0, y=0)
@@ -197,8 +227,8 @@ class ViewerWindow(tk.Frame):
 
     def viewSong(self, emotiontype):
         global playlistbox
-        playlistbox = Listbox(self, width=40, height=30, bg='ivory3', font=("Helvetica", 12))
-        playlistbox.place(x=10, y=150)
+        playlistbox = Listbox(self, width=40, height=20, bg='ivory3', font=("Helvetica", 12))
+        playlistbox.place(x=10, y=200)
         scrollbar = Scrollbar(self, orient="vertical")
         scrollbar.config(command=playlistbox.yview)
         playlistbox.config(yscrollcommand=scrollbar.set)
@@ -214,7 +244,7 @@ class ViewerWindow(tk.Frame):
             myresult = self.music_db.getsongsforCalm()
         print(myresult)
         for x in myresult:
-            player_controller.createQueue(x[0])
+            # player_controller.createQueue(x[0])
             filename = os.path.basename(x[0])
             index = 0
             playlistbox.insert(index, filename)
@@ -346,14 +376,14 @@ class PlayerWindow(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         self.music_db = music_db
-        logo = tk.PhotoImage(file="images/background3.gif")
+        logo = tk.PhotoImage(file="images/Viewer Window.png")
         BGlabel = tk.Label(self, image=logo)
         BGlabel.image = logo
         BGlabel.place(x=0, y=0)
-        lbl1 = Label(self, padx=5, width=100, bg="dim gray", fg='white', relief=GROOVE,
-                     text="\n\nWe are genrating playlist according to your detected emotion type",
+        lbl1 = Label(self, padx=20, width=35, bg="dim gray", fg='white', relief=GROOVE,
+                     text="We are genrating playlist according to \nyour detected emotion type",
                      font=('helvetica 15 bold'))
-        lbl1.place(x=20, y=130, relx=0.5, anchor=CENTER)
+        lbl1.place(x=340, y=100, anchor=CENTER)
         but1 = Button(self, padx=5, pady=5, width=10, bg='white', fg='black', relief=GROOVE, command=self.continuee,
                       text='Continue', font=('helvetica 15 bold'))
         but1.place(x=120, y=180)
@@ -403,9 +433,9 @@ class PlayerWindow(tk.Frame):
         statusbar.place(y=585)
         f = open("faceimage/emotion.txt", "r")
         emotion = f.read()
-        if emotion == "happiness":
+        if emotion == "happy":
             myresult1 = music_db.getsongsforHappy()
-        elif emotion == "sadness":
+        elif emotion == "sad":
             myresult1 = music_db.getsongsforSad()
         else:
             myresult1 = music_db.getsongsforCalm()
@@ -532,6 +562,6 @@ music_db = MusicDb()
 music_db.init()
 app = MusicPlayer()
 player_controller = playerController()
-app.geometry("720x600")
+app.geometry("1000x600")
 app.resizable(0, 0)
 app.mainloop()
