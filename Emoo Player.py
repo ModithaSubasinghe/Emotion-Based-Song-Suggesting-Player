@@ -3,15 +3,11 @@ from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
 from tkinter import messagebox
-import os
+
 import threading
 import time
 import os
 import cv2
-from os import path
-import matplotlib.pyplot as plt
-# from PIL import Image
-import pathlib
 
 from MediaStore import song_adder, music_db
 from MediaStore.music_db import MusicDb
@@ -23,7 +19,7 @@ LARGE_FONT = ("Verdana", 12)
 
 # show aboutus
 def about_us():
-    messagebox.showinfo('About EmooPlayer', 'This is a music player build using Python Tkinter by @emoviss')
+    messagebox.showinfo('About EmooPlayer', 'This is a music player build using Python Tkinter ')
 
 
 def quite():
@@ -34,7 +30,7 @@ def quite():
 class MusicPlayer(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        tk.Tk.wm_title(self, "Emotion Based Song Suggesting System")
+        tk.Tk.wm_title(self, "Emotion Based Song Suggesting Player")
         container = tk.Frame(self)
 
         container.pack(side="top", fill="both", expand=True)
@@ -90,14 +86,8 @@ class StartPage(tk.Frame):
 
         but1 = Button(self, padx=5, pady=5, width=15, bg='#0C0C0C', fg='#1DD3D0', activebackground='#E2F1F1', relief=GROOVE, command=self.getImage,
                       text='Open Cam', font=('helvetica 15 bold'))
-        but1.place(x=550, y=200)
-        but2 = tk.Button(self, padx=5, pady=5, width=15, bg='#0C0C0C', fg='#1DD3D0', text=" Add Songs ", relief=GROOVE, command=lambda: song_adder.addSongs(music_db),
-                         font=('helvetica 15 bold'))
-        but2.place(x=250, y=200)
+        but1.place(x=400, y=200)
 
-        # label1 = tk.Label(self, text="\n\nWelcome to the Emo player\nPlay songs which fix yoyr mood ", fg='green',
-        #                   font="Times 24")
-        # label2 = tk.Label(self, text="\n\nClick on TAKE PHOTO")
 
 
     # Get real time face image
@@ -129,7 +119,7 @@ class StartPage(tk.Frame):
 
         # If face is not detected print that
         if emotion == "None":
-            lbl3 = Label(self, padx=5, width=15, bg="dim gray", fg='white', relief=GROOVE,
+            lbl3 = Label(self, padx=5, width=20, bg="dim gray", fg='white', relief=GROOVE,
                          text="NO face Detected\n Try Again!!", font=('helvetica 15 bold'))
             lbl3.place(x=140, y=540, anchor=CENTER)
 
@@ -243,56 +233,68 @@ class ViewerWindow(tk.Frame):
         if emotiontype == "calm":
             myresult = self.music_db.getsongsforCalm()
         print(myresult)
+
         for x in myresult:
-            # player_controller.createQueue(x[0])
+
             filename = os.path.basename(x[0])
             index = 0
             playlistbox.insert(index, filename)
             playlist.insert(index, x[0])
             index += 1
+
         global lengthlabel
-        lengthlabel = Label(self, text='Total Length : --:--')
+        lengthlabel = Label(self, text='Total Length : --:--',borderwidth=0, bg='#17ADAB')
         lengthlabel.place(x=380, y=200)
         global currenttimelabel
-        currenttimelabel = Label(self, text='Current Time : --:--', relief=GROOVE)
+        currenttimelabel = Label(self, text='Current Time : --:--', relief=GROOVE, borderwidth=0, bg='#17ADAB')
         currenttimelabel.place(x=380, y=250)
 
         global playPhoto
-        playPhoto = PhotoImage(file='images/play.png')
-        playBtn = tk.Button(self, image=playPhoto, command=self.play_music)
+        play_photo = Image.open('images/play.png')
+        playPhoto = ImageTk.PhotoImage(play_photo.resize((40,40)))
+        playBtn = tk.Button(self, image=playPhoto, command=self.play_music, borderwidth=0, bg='#0FADAE')
         playBtn.place(x=380, y=300)
+
         global stopPhoto
-        stopPhoto = PhotoImage(file='images/stop.png')
-        stopBtn = tk.Button(self, image=stopPhoto, command=self.stop_music)
-        stopBtn.place(x=480, y=300)
+        stop_Photo = Image.open('images/stop.png')
+        stopPhoto = ImageTk.PhotoImage(stop_Photo.resize((40,40)))
+        stopBtn = tk.Button(self, image=stopPhoto, command=self.stop_music, borderwidth=0, bg='#0FADAE')
+        stopBtn.place(x=380, y=360)
+
         global pausePhoto
-        pausePhoto = PhotoImage(file='images/pause.png')
-        pauseBtn = tk.Button(self, image=pausePhoto, command=self.pause_music)
-        pauseBtn.place(x=580, y=300)
+        pause_Photo = Image.open('images/pause.png')
+        pausePhoto = ImageTk.PhotoImage(pause_Photo.resize((40, 40)))
+        pauseBtn = tk.Button(self, image=pausePhoto, command=self.pause_music, borderwidth=0, bg='#14B7B6')
+        pauseBtn.place(x=440, y=300)
+
         global statusbar
         statusbar = ttk.Label(self, text="Welcome to Emoo Music", relief=SUNKEN, width=720, anchor=W,
                               font='Times 10 italic')
         statusbar.pack(side=BOTTOM, fill=X)
         statusbar.place(y=585)
         print(playlist)
+
         global rewindPhoto
         global rewindBtn
-        rewindPhoto = PhotoImage(file='images/rewind.png')
-        rewindBtn = Button(self, image=rewindPhoto, command=self.rewind_music)
-        rewindBtn.place(x=400, y=400)
+        rewind_Photo = Image.open('images/rewind.png')
+        rewindPhoto = ImageTk.PhotoImage(rewind_Photo.resize((40, 40)))
+        rewindBtn = Button(self, image=rewindPhoto, command=self.rewind_music,borderwidth=0, bg='#14B2B5')
+        rewindBtn.place(x=440, y=360)
+
         global mutePhoto
         global volumePhoto
         global volumeBtn
-        mutePhoto = PhotoImage(file='images/mute.png')
-        volumePhoto = PhotoImage(file='images/volume.png')
-        volumeBtn = Button(self, image=volumePhoto, command=self.mute_music)
-        volumeBtn.place(x=450, y=400)
-        global scale
 
-        scale = Scale(self, from_=0, to=100, orient=HORIZONTAL, command=self.set_vol)
+
+        global scale
+        scale = Scale(self, from_=0, to=100, orient=HORIZONTAL, command=self.set_vol, borderwidth=0, bg="#000000", fg="#20C5C9")
         scale.set(70)  # implement the default value of scale when music player starts
         player_controller.set_vol(0.7)
-        scale.place(x=550, y=400)
+        scale.place(x=550, y=250)
+
+        volume_label= Label(self, text="Volume", relief=SUNKEN, width=7, anchor=W, borderwidth=0,
+                              font='Times 10 italic', bg="#20C5C9")
+        volume_label.place(x=580, y=300)
 
         but5 = Button(self, padx=5, pady=5, width=20, fg='black', relief=GROOVE,
                       command=lambda: self.controller.show_frame(StartPage), text='Back To Home',
@@ -354,8 +356,7 @@ class ViewerWindow(tk.Frame):
             scale.set(0)
 
     def start_count(self, t):
-        # mixer.music.get_busy(): - Returns FALSE when we press the stop button (music stop playing)
-        # Continue - Ignores all of the statements below it. We check if music is paused or not.
+
         current_time = 0
         while current_time <= t and player_controller.checkBusy():
             if paused:
@@ -387,9 +388,9 @@ class PlayerWindow(tk.Frame):
         but1 = Button(self, padx=5, pady=5, width=10, bg='white', fg='black', relief=GROOVE, command=self.continuee,
                       text='Continue', font=('helvetica 15 bold'))
         but1.place(x=120, y=180)
-        but2 = Button(self, padx=5, pady=5, width=10, bg='white', fg='black', relief=GROOVE, text='Back',
-                      command=self.clear, font=('helvetica 15 bold'))
-        but2.place(x=420, y=180)
+        # but2 = Button(self, padx=5, pady=5, width=10, bg='white', fg='black', relief=GROOVE, text='Back',
+        #               command=self.clear, font=('helvetica 15 bold'))
+        # but2.place(x=420, y=180)
 
     global count
     count = 0
@@ -407,16 +408,6 @@ class PlayerWindow(tk.Frame):
     def clear(self):
         print("clear")
         playlistbox.place_forget()
-        # scrollbar.place_forget()
-        # statusbar.place_forget()
-        # lengthlabel.place_forget()
-        # currenttimelabel.place_forget()
-        # playBtn.place_forget()
-        # stopBtn.place_forget()
-        # pauseBtn.place_forget()
-        # rewindBtn.place_forget()
-        # volumeBtn.place_forget()
-        # scale.place_forget()
         self.controller.show_frame(StartPage)
 
     def showPlaylist(self):
@@ -440,52 +431,70 @@ class PlayerWindow(tk.Frame):
         else:
             myresult1 = music_db.getsongsforCalm()
         for x in myresult1:
-            player_controller.createQueue(x[0])
             filename = os.path.basename(x[0])
             index = 0
             playlistbox.insert(index, filename)
             playlist.insert(index, x[0])
             index += 1
+
         global lengthlabel
-        lengthlabel = Label(self, text='Total Length : --:--')
-        lengthlabel.place(x=380, y=250)
+        lengthlabel = Label(self, text='Total Length : --:--', borderwidth=0, bg='#17ADAB')
+        lengthlabel.place(x=380, y=200)
         global currenttimelabel
-        currenttimelabel = Label(self, text='Current Time : --:--', relief=GROOVE)
-        currenttimelabel.place(x=380, y=300)
+        currenttimelabel = Label(self, text='Current Time : --:--', relief=GROOVE, borderwidth=0, bg='#17ADAB')
+        currenttimelabel.place(x=380, y=250)
 
         global playPhoto
-        global playBtn
-        playPhoto = PhotoImage(file='images/play.png')
-        playBtn = tk.Button(self, image=playPhoto, command=self.play_music)
-        playBtn.place(x=380, y=350)
+        play_photo = Image.open('images/play.png')
+        playPhoto = ImageTk.PhotoImage(play_photo.resize((40, 40)))
+        playBtn = tk.Button(self, image=playPhoto, command=self.play_music, borderwidth=0, bg='#0FADAE')
+        playBtn.place(x=380, y=300)
+
         global stopPhoto
-        global stopBtn
-        stopPhoto = PhotoImage(file='images/stop.png')
-        stopBtn = tk.Button(self, image=stopPhoto, command=self.stop_music)
-        stopBtn.place(x=480, y=350)
+        stop_Photo = Image.open('images/stop.png')
+        stopPhoto = ImageTk.PhotoImage(stop_Photo.resize((40, 40)))
+        stopBtn = tk.Button(self, image=stopPhoto, command=self.stop_music, borderwidth=0, bg='#0FADAE')
+        stopBtn.place(x=380, y=360)
+
         global pausePhoto
-        global pauseBtn
-        pausePhoto = PhotoImage(file='images/pause.png')
-        pauseBtn = tk.Button(self, image=pausePhoto, command=self.pause_music)
-        pauseBtn.place(x=580, y=350)
-        print(playlist)
+        pause_Photo = Image.open('images/pause.png')
+        pausePhoto = ImageTk.PhotoImage(pause_Photo.resize((40, 40)))
+        pauseBtn = tk.Button(self, image=pausePhoto, command=self.pause_music, borderwidth=0, bg='#14B7B6')
+        pauseBtn.place(x=440, y=300)
+
+        # global statusbar
+        # statusbar = ttk.Label(self, text="Welcome to Emoo Music", relief=SUNKEN, width=720, anchor=W,
+        #                       font='Times 10 italic')
+        # statusbar.pack(side=BOTTOM, fill=X)
+        # statusbar.place(y=585)
+        # print(playlist)
+
         global rewindPhoto
         global rewindBtn
-        rewindPhoto = PhotoImage(file='images/rewind.png')
-        rewindBtn = Button(self, image=rewindPhoto, command=self.rewind_music)
-        rewindBtn.place(x=400, y=450)
+        rewind_Photo = Image.open('images/rewind.png')
+        rewindPhoto = ImageTk.PhotoImage(rewind_Photo.resize((40, 40)))
+        rewindBtn = Button(self, image=rewindPhoto, command=self.rewind_music, borderwidth=0, bg='#14B2B5')
+        rewindBtn.place(x=440, y=360)
+
         global mutePhoto
         global volumePhoto
         global volumeBtn
-        mutePhoto = PhotoImage(file='images/mute.png')
-        volumePhoto = PhotoImage(file='images/volume.png')
-        volumeBtn = Button(self, image=volumePhoto, command=self.mute_music)
-        volumeBtn.place(x=450, y=450)
+
         global scale
-        scale = Scale(self, from_=0, to=100, orient=HORIZONTAL, command=self.set_vol)
+        scale = Scale(self, from_=0, to=100, orient=HORIZONTAL, command=self.set_vol, borderwidth=0, bg="#000000",
+                      fg="#20C5C9")
         scale.set(70)  # implement the default value of scale when music player starts
         player_controller.set_vol(0.7)
-        scale.place(x=550, y=450)
+        scale.place(x=550, y=250)
+
+        volume_label = Label(self, text="Volume", relief=SUNKEN, width=7, anchor=W, borderwidth=0,
+                             font='Times 10 italic', bg="#20C5C9")
+        volume_label.place(x=580, y=300)
+
+        but5 = Button(self, padx=5, pady=5, width=20, fg='black', relief=GROOVE,
+                      command=lambda: self.controller.show_frame(StartPage), text='Back To Home',
+                      font=('helvetica 15 bold'))
+        but5.place(x=500, y=500)
 
     global paused
     paused = False
@@ -542,8 +551,7 @@ class PlayerWindow(tk.Frame):
             scale.set(0)
 
     def start_count(self, t):
-        # mixer.music.get_busy(): - Returns FALSE when we press the stop button (music stop playing)
-        # Continue - Ignores all of the statements below it. We check if music is paused or not.
+
         current_time = 0
         while current_time <= t and player_controller.checkBusy():
             if paused:

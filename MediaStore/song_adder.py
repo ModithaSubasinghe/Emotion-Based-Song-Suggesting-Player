@@ -16,8 +16,7 @@ def addSongs(music_db):
         print(file_path[k])
         songs.append(file_path[k])
         print(str(songs))
-    # mycursor.execute("SELECT url FROM song")
-    # myresult = mycursor.fetchall()
+
 
     for x in songs:
         base = os.path.basename(x)
@@ -44,6 +43,6 @@ def addSongs(music_db):
             sound.export(dst, format="wav")
             music_db.insertsong(dst, name, emotion)
             # popupmsg("Song successfully added")
-            messagebox.showinfo('!', 'Song successfully added \n Detected Emotion= ' + emotion)
+            messagebox.showinfo('!', 'Song successfully added \n Detected Emotion is ' + emotion)
 
 
